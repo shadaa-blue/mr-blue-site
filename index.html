@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-site-verification" content="9EdGvM_WEK5WrFKssrjLhv9Kkks6dJ11ZXkRFRx6ICg" />
+  <meta name="description" content="MR.BLUE - مستەر بلوو: تێرمیناڵی زانیاری و پەیوەندیی ڕاستەوخۆ بە بەستنەوەی Firebase Realtime Database." />
+  <meta name="keywords" content="MR.BLUE, مستەر بلوو, Mr Blue, terminal, Firebase" />
+  <title>MR.BLUE // مستەر بلوو — Classified Terminal</title>
+  <style>
+    :root {
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.25);
+      --accent-glow: rgba(56, 189, 248, 0.14);
+      --bg-top: #071324;
+    }
+    body.theme-green {
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.28);
+      --accent-glow: rgba(34, 197, 94, 0.14);
+      --bg-top: #061c11;
+    }
+    body.theme-red {
+      --accent: #ef4444;
+      --accent-soft: rgba(239, 68, 68, 0.32);
+      --accent-glow: rgba(239, 68, 68, 0.16);
+      --bg-top: #21070b;
+    }
+    body.stealth-mode {
+      --bg-top: #020408;
+      filter: brightness(0.86) contrast(1.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 12% 0%, var(--accent-glow) 0%, transparent 45%),
+        radial-gradient(circle at 88% 8%, rgba(16, 185, 129, 0.08) 0%, transparent 42%),
+        linear-gradient(180deg, var(--bg-top) 0%, #04070e 60%, #020408 100%);
+      color: #e6f1ff;
+      min-height: 100vh;
+      transition: background 0.3s ease, filter 0.3s ease;
+    }
+    body.destruct-flash {
+      animation: destructPulse 0.45s infinite alternate;
+    }
+    @keyframes destructPulse {
+      from { background: #1a0306; }
+      to { background: #45060c; }
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .card {
+      position: relative;
+      overflow: hidden;
+      background: rgba(9, 17, 30, 0.95);
+      border: 1px solid var(--accent-soft);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), #34d399, transparent);
+      opacity: 0.85;
+    }
+    .scanline {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, transparent 0%, var(--accent-glow) 50%, transparent 100%);
+      background-size: 100% 220px;
+      animation: scanMove 7s linear infinite;
+    }
+    @keyframes scanMove {
+      0% { background-position: 0 -220px; }
+      100% { background-position: 0 650px; }
+    }
+    .boot-box {
+      background: rgba(4, 9, 17, 0.96);
+      border: 1px solid var(--accent-soft);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--accent);
+    }
+    .sec-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(248, 113, 113, 0.42);
+      color: #fca5a5;
+      margin-bottom: 8px;
+    }
+    .sec-tag::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f87171;
+      box-shadow: 0 0 8px #f87171;
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(30, 58, 95, 0.78);
+    }
+    .brand-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 18px var(--accent-glow);
+    }
+    .sub {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 6px 0 12px;
+    }
+    .badge {
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: rgba(14, 34, 58, 0.92);
+      border: 1px solid var(--accent-soft);
+      color: #bae6fd;
+    }
+    .badge.arch {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(52, 211, 153, 0.68);
+      color: #6ee7b7;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.22);
+    }
+    .telemetry {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .stat {
+      background: rgba(5, 11, 20, 0.92);
+      border: 1px solid rgba(30, 58, 95, 0.88);
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .stat span {
+      display: block;
+      color: #64748b;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .stat strong {
+      color: #bae6fd;
+      font-size: 12.5px;
+    }
+    .stat strong.warn { color: #fbbf24; }
+    .stat strong.crit { color: #f87171; }
+    .elevate-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(6, 13, 24, 0.82);
+      border: 1px dashed var(--accent-soft);
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .row.compact {
+      margin-top: 0;
+    }
+    input, button, select {
+      padding: 10px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--accent-soft);
+      background: rgba(5, 10, 19, 0.95);
+      color: #e6f1ff;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.15s ease, transform 0.12s ease, filter 0.15s ease;
+    }
+    input { flex: 1; min-width: 150px; }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    button {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.1); }
+    button:active { transform: scale(0.98); }
+    button.secondary {
+      background: rgba(15, 29, 49, 0.92);
+      border-color: var(--accent-soft);
+      color: #dbeafe;
+    }
+    .messages {
+      max-height: 390px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding: 14px;
+      background: rgba(4, 8, 15, 0.96);
+      border: 1px solid rgba(30, 58, 95, 0.88);
+      border-radius: 12px;
+      margin-top: 14px;
+    }
+    .msg {
+      padding: 10px 13px;
+      border-radius: 10px;
+      background: rgba(12, 25, 43, 0.92);
+      border: 1px solid rgba(37, 74, 118, 0.75);
+      line-height: 1.65;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+    .msg.sys {
+      background: rgba(8, 20, 36, 0.92);
+      border-color: var(--accent-soft);
+      color: #bae6fd;
+    }
+    .msg.alert {
+      background: rgba(127, 29, 29, 0.36);
+      border-color: rgba(248, 113, 113, 0.8);
+      color: #fecaca;
+    }
+    .msg .meta {
+      font-size: 11px;
+      color: var(--accent);
+      margin-bottom: 4px;
+      opacity: 0.92;
+    }
+    .cmd-section {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: rgba(6, 12, 22, 0.88);
+      border: 1px solid rgba(30, 58, 95, 0.75);
+    }
+    .cmd-section.omega {
+      border-color: rgba(52, 211, 153, 0.48);
+      background: rgba(6, 20, 22, 0.86);
+    }
+    .cmd-label {
+      font-size: 11px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: block;
+      letter-spacing: 0.4px;
+    }
+    .cmd-section.omega .cmd-label {
+      color: #6ee7b7;
+    }
+    .cmds {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .cmds button {
+      padding: 6px 11px;
+      font-size: 11px;
+      border-radius: 8px;
+      background: rgba(14, 30, 51, 0.95);
+      border-color: var(--accent-soft);
+    }
+    .cmd-section.omega .cmds button {
+      background: rgba(12, 36, 38, 0.95);
+      border-color: rgba(52, 211, 153, 0.42);
+      color: #a7f3d0;
+    }
+    .hidden { display: none !important; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.86);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal {
+      max-width: 680px;
+      max-height: 85vh;
+      overflow-y: auto;
+      width: 100%;
+      background: #091322;
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+    .dossier-box {
+      background: rgba(5, 11, 20, 0.95);
+      border: 1px solid rgba(30, 58, 95, 0.85);
+      border-radius: 12px;
+      padding: 15px;
+      margin: 12px 0 16px;
+      font-size: 12.5px;
+      line-height: 1.85;
+      color: #cbd5e1;
+    }
+    .dossier-box h4 {
+      margin: 14px 0 6px;
+      color: var(--accent);
+      font-size: 13.5px;
+    }
+    .dossier-box h4:first-child {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="intelModal" class="modal-backdrop hidden" onclick="if(event.target===this) toggleIntel(false)">
+    <div class="modal">
+      <div class="sec-tag">EYES ONLY // GHOST DOSSIER // MR.BLUE</div>
+      <div class="title" style="font-size:18px;">⚠ دۆسیەی نهێنیی INTEL — فایلی [MR.BLUE]</div>
+      <div class="dossier-box">
+        <h4>١. ناسنامەی سێبەر و مێژووی نادیار</h4>
+        <p style="margin:0;">
+          لە پشت هەموو ئەو سیستەم، داتابەیس و کەناڵە نهێنییانەی کە بە ناوی <strong>MR.BLUE</strong> کار دەکەن، عەقڵێکی سارد، زیرەک و بێبەزەیی وەستاوە کە هیچ دەزگا و کەسێک نەیتوانیوە بە تەواوی ناسنامەی ڕاستەقینەی یان شوێنی حەشارگەی ئاشکرا بکات. کاتێک خەڵک خەریکی دۆزینەوەی سەرەداون لەسەر ڕووکارەکان، ئەو پێشتر هەموو ڕێڕەوەکانی گۆڕیوە و لە دۆخێکی سێبەردا هەموو جموجۆڵێک لەژێر چاودێریدا ڕادەگرێت. ئەو نە بە دەنگی بەرز خۆی دەناسێنێت و نە بە هەڵە شوێنەوار جێدەهێڵێت؛ کاتێک هەست بکات کەشەکە گۆڕاوە، لەناو تاریکیدا دەتوێتەوە و وەک ئەوەی هەرگیز لەوێ نەبووبێت.
+        </p>
+
+        <h4>٢. توانای هاککردن، کۆنتڕۆڵ و تێکدانی سیستەم</h4>
+        <p style="margin:0;">
+          خاوەن ئەزموونێکی قووڵ و ترسناکە لە ناسینەوەی لاوازیی سیستەمەکان، تێپەڕاندنی بەربەستەکان، داڕشتنەوەی ڕێڕەوی پەیوەندییەکان و زاڵبوون بەسەر ئەو ژینگە دیجیتاڵییانەی کە دەیەوێت بیانخاتە ژێر دەستی خۆی. لە دۆسیە تۆمارکراوەکاندا وەک کەسێک باس دەکرێت کە هاککردن لای ئەو تەنها چوونە ناو کۆدەکان نییە، بەڵکو خوێندنەوەی ڕەفتاری ئەو کەسانەیە کە بەکاریان دەهێنن. دەتوانێت بە یەک فەرمان ڕێڕەوی گفتوگۆ بپچڕێنێت، ژوور قفڵ بدات، زانیاری کۆدکراو یان شێواو بنێرێت، و هەموو مێژوویەکی تۆمارکراو بە یەکجاری بسڕێتەوە بەبێ ئەوەی هیچ پاشماوەیەک بمێنێتەوە.
+        </p>
+
+        <h4>٣. هەڵسوکەوتی تاوانبارێکی زیرەک و بێپەروا</h4>
+        <p style="margin:0;">
+          لە گێڕانەوە و ڕاپۆرتە نهێنییەکاندا وەک کەسێکی ساردوسڕ، خاوەن بڕیاری خێرا و بێپەروا لە بەرامبەر مەترسیدا دەردەکەوێت. کاتێک هەنگاوێک دەنێت، پێشتر هەموو ئەگەرەکان و هەڵەی ئەوانی تری هەژمار کردووە. نە پەشیمان دەبێتەوە و نە بە هەڕەشە و گومان دەترسێت؛ بەڵکو کاتێک ئەوانی تر لە دڵەڕاوکێ و پرسیاردان، ئەو بە هێمنی و متمانەوە سەیری شاشەکە دەکات و یارییەکە بەو شێوەیە دەبات کە خۆی دەیەوێت. هەر کاتێک بڕیار بدات، دەتوانێت لە دۆخی چاودێریی بێدەنگەوە بگۆڕێت بۆ هێرشێکی کتوپڕی زانیاری و فەرمان.
+        </p>
+
+        <h4>٤. تۆڕی چاودێری و سزادانی دیجیتاڵی</h4>
+        <p style="margin:0;">
+          هەر کەسێک پێی بڵێت کە لە دەرەوەی ئەم سیستەمە پارێزراوە یان بە ئاسانی دەتوانێت یاری بکات، لەگەڵ واقیعێکی تر بەرەوڕوو دەبێتەوە. لێرەدا هەر پەیامێک، هەر کاتژمێرێک، و هەر هاتنەژوورەوەیەک وەک جموجۆڵێکی تۆمارکراو سەیر دەکرێت. ناو خستنە لیستی چاودێری، پچڕاندنی دەنگی گفتوگۆ، قفڵدانی ژوور، بەرزکردنەوەی ئاستی مەترسی، و سڕینەوەی گشتی تەنها بەشێک لەو ئامرازانەن کە لە دەستی ئەو کەسەدایە کە کۆنتڕۆڵی پلە باڵای بە دەستەوەیە.
+        </p>
+
+        <h4>٥. یاسای کۆتایی ناو تێرمیناڵەکە</h4>
+        <p style="margin:0;">
+          لە کۆتاییدا تەنها یەک ڕاستی دەمێنێتەوە: ئەوانەی دەچنە ناو ئەم تێرمیناڵەوە میوانی کەناڵێکن کە خاوەنەکەی هەمیشە هەنگاوێک لە پێش هەمووانەوەیە. کاتێک سێبەرەکە بێتە ناو هێڵەوە، کۆتایی بە پرسیار دێت و دەستپێکی کۆنتڕۆڵ دەست پێ دەکات.
+        </p>
+      </div>
+      <button onclick="toggleIntel(false)">داخستنی دۆسیە</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="authCard" class="card">
+      <div class="scanline"></div>
+      <div class="sec-tag">TOP SECRET // NODE-09 // ENCRYPTED CHANNEL</div>
+      <div class="title">MR.BLUE // مستەر بلوو</div>
+      <p class="sub">بۆ چوونە ژوورەوە بۆ تێرمیناڵی نهێنی، ناوی بەکارهێنەر (Callsign) و کۆدی چوونە ژوورەوە بنووسە.</p>
+      <div class="row">
+        <input id="callsignInput" type="text" placeholder="Callsign" />
+        <input id="accessInput" type="password" placeholder="Access Code" />
+        <button onclick="login()">AUTHENTICATE</button>
+      </div>
+      <div id="bootBox" class="boot-box hidden"></div>
+      <div id="authError" style="color:#f87171; margin-top:8px; font-size:13px;"></div>
+    </div>
+
+    <div id="appCard" class="card hidden">
+      <div class="scanline"></div>
+      <div class="topbar">
+        <div class="brand-left">
+          <span class="title">MR.BLUE // مستەر بلوو</span>
+          <span id="rankBadge" class="badge">OPERATIVE</span>
+        </div>
+        <div class="row compact">
+          <span id="syncBadge" class="badge">SYNC: CONNECTING...</span>
+          <button class="secondary" onclick="toggleIntel(true)">⚠ INTEL</button>
+          <button id="voiceBtn" class="secondary" onclick="toggleVoice()">🗣 VOICE</button>
+          <button id="autoReadBtn" class="secondary" onclick="toggleAutoRead()">📖 AUTO-READ: OFF</button>
+          <button id="silenceBtn" class="secondary" onclick="toggleSilence()">🔇 SILENCE</button>
+          <button id="shieldBtn" class="secondary" onclick="toggleShield()">👁️ SHIELD</button>
+          <button id="soundBtn" class="secondary" onclick="toggleSound()">🔊 SOUND</button>
+          <button id="lockBtn" class="secondary" onclick="toggleLock()">🔒 LOCK</button>
+          <select id="burnSelect" title="Auto Burn">
+            <option value="0">BURN: OFF</option>
+            <option value="15">BURN: 15s</option>
+            <option value="60">BURN: 60s</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="telemetry">
+        <div class="stat"><span>ACTIVE NODE</span><strong id="nodeStat">MRB-09 // ONLINE</strong></div>
+        <div class="stat"><span>ROOM STATE</span><strong id="lockStat">UNLOCKED</strong></div>
+        <div class="stat"><span>THREAT LEVEL</span><strong id="threatStat">LOW</strong></div>
+        <div class="stat"><span>STEALTH MODE</span><strong id="stealthStat">OFF</strong></div>
+        <div class="stat"><span>NPC ENGINE</span><strong id="npcStat">STANDBY</strong></div>
+        <div class="stat"><span>OPERATOR</span><strong id="opStat">---</strong></div>
+        <div class="stat"><span>ACTIVE OPERATIVES</span><strong id="opsStat">---</strong></div>
+        <div class="stat"><span>LOG COUNT</span><strong id="countStat">0</strong></div>
+      </div>
+
+      <div class="elevate-box">
+        <div class="row compact">
+          <input id="directorInput" type="password" placeholder="Director Code" onkeydown="if(event.key==='Enter') elevateRank()" />
+          <button class="secondary" onclick="elevateRank()">ELEVATE</button>
+        </div>
+      </div>
+
+      <div id="terminalBody">
+        <div id="messages" class="messages"></div>
+
+        <div class="cmd-section">
+          <span class="cmd-label">STANDARD COMMANDS // فەرمانە گشتییەکان</span>
+          <div class="cmds">
+            <button onclick="quickCmd('/help')">/help</button>
+            <button onclick="quickCmd('/scan')">/scan</button>
+            <button onclick="quickCmd('/ping')">/ping</button>
+            <button onclick="quickCmd('/status')">/status</button>
+            <button onclick="quickCmd('/status-all')">/status-all</button>
+            <button onclick="quickCmd('/time')">/time</button>
+            <button onclick="quickCmd('/whoami')">/whoami</button>
+            <button onclick="quickCmd('/wipe-local')">/wipe-local</button>
+            <button onclick="quickCmd('/clear')">/clear</button>
+          </div>
+        </div>
+
+        <div id="omegaCmdsBox" class="cmd-section omega hidden">
+          <span class="cmd-label">OMEGA ROOT COMMANDS // فەرمانەکانی پلەی باڵا</span>
+          <div class="cmds">
+            <button onclick="quickCmd('/npc')">/npc</button>
+            <button onclick="quickCmd('/stopnpc')">/stopnpc</button>
+            <button onclick="quickCmd('/probe')">/probe</button>
+            <button onclick="quickCmd('/stealth')">/stealth</button>
+            <button onclick="quickCmd('/export')">/export</button>
+            <button onclick="quickCmd('/intercept ')">/intercept</button>
+            <button onclick="quickCmd('/dossier ')">/dossier</button>
+            <button onclick="quickCmd('/fake-error')">/fake-error</button>
+            <button onclick="quickCmd('/matrix')">/matrix</button>
+            <button onclick="quickCmd('/alert ')">/alert</button>
+            <button onclick="quickCmd('/broadcast ')">/broadcast</button>
+            <button onclick="quickCmd('/say ')">/say</button>
+            <button onclick="quickCmd('/whisper-say ')">/whisper-say</button>
+            <button onclick="quickCmd('/target ')">/target</button>
+            <button onclick="quickCmd('/theme ')">/theme</button>
+            <button onclick="quickCmd('/decrypt ')">/decrypt</button>
+            <button onclick="quickCmd('/encrypt ')">/encrypt</button>
+            <button onclick="quickCmd('/scramble ')">/scramble</button>
+            <button onclick="quickCmd('/trace')">/trace</button>
+            <button onclick="quickCmd('/override ')">/override</button>
+            <button onclick="quickCmd('/threat ')">/threat</button>
+            <button onclick="quickCmd('/blacklist ')">/blacklist</button>
+            <button onclick="quickCmd('/whisper ')">/whisper</button>
+            <button onclick="quickCmd('/countdown ')">/countdown</button>
+            <button onclick="quickCmd('/ghost')">/ghost</button>
+            <button onclick="quickCmd('/lock')">/lock</button>
+            <button onclick="quickCmd('/purge')">/purge</button>
+            <button onclick="quickCmd('/selfdestruct')">/selfdestruct</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <input id="msgInput" type="text" placeholder="پەیام یان فەرمان بنووسە (بۆ نموونە: /scan یان /help)..." onkeydown="if(event.key==='Enter') sendMessage()" />
+          <button onclick="sendMessage()">SEND</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ACCESS_CODE = "1197";
+    const DIRECTOR_CODE = "SHAD-001";
+    const DB_URL = "https://mr-blue-3bdbd-default-rtdb.firebaseio.com";
+
+    let currentUser = "OPERATIVE";
+    let isArchitect = false;
+    let isLocked = false;
+    let isShielded = false;
+    let isStealth = false;
+    let soundEnabled = true;
+    let voiceEnabled = true;
+    let autoReadEnabled = false;
+    let threatLevel = "LOW";
+    let activeOperatives = [];
+    let localMessages = [];
+    let pollTimer = null;
+    let npcTimer = null;
+    let npcStep = 0;
+    let npcPair = ["KAIROX", "NOCTIS"];
+
+    const npcDialogue = [
+      {
+        speaker: "KAIROX",
+        role: "RECON // چاودێری ڕێڕەو",
+        line: "نۆکتیس، هێڵەکە لەژێر پشکنیندایە؛ تا ئێستا هیچ کەسێک نەیتوانیوە بێتە ناو ڕێڕەوە شاراوەکە."
+      },
+      {
+        speaker: "NOCTIS",
+        role: "ENFORCER // سێبەری چاودێری",
+        line: "باشە کایڕۆکس. هەر جووڵەیەکی زیادە ببینیت، یەکسەر تۆماری بکە؛ لێرەدا هیچ هەڵەیەک بە بێدەنگی تێناپەڕێت."
+      },
+      {
+        speaker: "KAIROX",
+        role: "RECON // چاودێری ڕێڕەو",
+        line: "شوێنەوارە کۆنەکان پاک کرانەوە و تەنها داتای نوێ ماونەتەوە؛ هەمووان لەژێر چاودێریدان."
+      },
+      {
+        speaker: "NOCTIS",
+        role: "ENFORCER // سێبەری چاودێری",
+        line: "باشە. چاوەڕێی فەرمانی داهاتوو دەبین؛ کاتێک کۆنتڕۆڵ بدرێت، یارییەکە بە تەواوی دەگۆڕێت."
+      }
+    ];
+
+    document.getElementById("intelModal").classList.add("hidden");
+
+    (function restoreSavedPrefs() {
+      try {
+        const savedTheme = localStorage.getItem("mrb_theme");
+        if (savedTheme && ["blue", "green", "red"].includes(savedTheme)) {
+          applyTheme(savedTheme, false);
+        }
+        const savedStealth = localStorage.getItem("mrb_stealth");
+        if (savedStealth === "1") {
+          isStealth = true;
+          document.body.classList.add("stealth-mode");
+        }
+      } catch (_) {}
+    })();
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") toggleIntel(false);
+    });
+
+    function speakText(text, profile = "normal") {
+      if (!voiceEnabled || isStealth || !("speechSynthesis" in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        if (profile === "deep") {
+          utter.pitch = 0.52;
+          utter.rate = 0.82;
+          utter.volume = 0.95;
+        } else if (profile === "kairos") {
+          utter.pitch = 0.92;
+          utter.rate = 0.98;
+          utter.volume = 0.88;
+        } else if (profile === "urgent") {
+          utter.pitch = 1.05;
+          utter.rate = 1.15;
+          utter.volume = 1.0;
+        } else {
+          utter.pitch = 0.75;
+          utter.rate = 0.95;
+          utter.volume = 0.9;
+        }
+        window.speechSynthesis.speak(utter);
+      } catch (_) {}
+    }
+
+    function playBeep(freq = 660, duration = 0.08) {
+      if (!soundEnabled || isStealth) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.value = freq;
+        gain.gain.value = 0.045;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (_) {}
+    }
+
+    function registerOperative(name) {
+      const clean = (name || "").trim();
+      if (!clean) return;
+      if (!activeOperatives.includes(clean)) {
+        activeOperatives.push(clean);
+      }
+      updateTelemetry();
+    }
+
+    function updateTelemetry() {
+      document.getElementById("lockStat").textContent = isLocked ? "LOCKED" : "UNLOCKED";
+      document.getElementById("opStat").textContent = isArchitect ? `${currentUser} [Ω]` : currentUser;
+      document.getElementById("opsStat").textContent = activeOperatives.length ? activeOperatives.join(", ") : "---";
+      document.getElementById("countStat").textContent = String(localMessages.length);
+      document.getElementById("npcStat").textContent = npcTimer ? `ACTIVE (${npcPair[0]} & ${npcPair[1]})` : "STANDBY";
+      document.getElementById("stealthStat").textContent = isStealth ? "SILENT SHADOW" : "OFF";
+      const tEl = document.getElementById("threatStat");
+      tEl.textContent = threatLevel;
+      tEl.className = threatLevel === "CRITICAL" ? "crit" : threatLevel === "ELEVATED" ? "warn" : "";
+    }
+
+    function toggleIntel(show) {
+      document.getElementById("intelModal").classList.toggle("hidden", !show);
+      playBeep(show ? 760 : 540, 0.08);
+    }
+
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      document.getElementById("voiceBtn").textContent = voiceEnabled ? "🗣 VOICE" : "🤐 NO-VOICE";
+      playBeep(voiceEnabled ? 780 : 400, 0.08);
+    }
+
+    function toggleAutoRead() {
+      autoReadEnabled = !autoReadEnabled;
+      document.getElementById("autoReadBtn").textContent = autoReadEnabled ? "📖 AUTO-READ: ON" : "📖 AUTO-READ: OFF";
+      playBeep(autoReadEnabled ? 820 : 460, 0.08);
+    }
+
+    function toggleSilence() {
+      const anyOn = soundEnabled || voiceEnabled || autoReadEnabled;
+      if (anyOn) {
+        soundEnabled = false;
+        voiceEnabled = false;
+        autoReadEnabled = false;
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+        document.getElementById("silenceBtn").textContent = "🔊 UNSILENCE";
+      } else {
+        soundEnabled = true;
+        voiceEnabled = true;
+        document.getElementById("silenceBtn").textContent = "🔇 SILENCE";
+      }
+      document.getElementById("soundBtn").textContent = soundEnabled ? "🔊 SOUND" : "🔇 MUTED";
+      document.getElementById("voiceBtn").textContent = voiceEnabled ? "🗣 VOICE" : "🤐 NO-VOICE";
+      document.getElementById("autoReadBtn").textContent = autoReadEnabled ? "📖 AUTO-READ: ON" : "📖 AUTO-READ: OFF";
+    }
+
+    function toggleShield() {
+      isShielded = !isShielded;
+      document.getElementById("terminalBody").classList.toggle("hidden", isShielded);
+      document.getElementById("shieldBtn").textContent = isShielded ? "🙈 UNSHIELD" : "👁️ SHIELD";
+      playBeep(isShielded ? 420 : 720);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundBtn").textContent = soundEnabled ? "🔊 SOUND" : "🔇 MUTED";
+    }
+
+    function toggleLock() {
+      if (!isArchitect && !isLocked) {
+        addSystemMsg("تەنها پلەی باڵا دەتوانێت ژوورەکە قفڵ بدات.");
+        playBeep(230, 0.14);
+        return;
+      }
+      isLocked = !isLocked;
+      document.getElementById("lockBtn").textContent = isLocked ? "🔓 UNLOCK" : "🔒 LOCK";
+      updateTelemetry();
+      playBeep(isLocked ? 340 : 780, 0.12);
+      addSystemMsg(isLocked ? "🔒 دۆخی LOCK چالاک کرا؛ ناردنی پەیام بۆ بەکارهێنەرانی ئاسایی ڕاگیرا." : "🔓 قفڵی ژوورەکە کرایەوە؛ پەیوەندی ئاسایی بووەوە.");
+    }
+
+    function applyTheme(themeName, persist = true) {
+      document.body.classList.remove("theme-green", "theme-red");
+      if (themeName === "green") document.body.classList.add("theme-green");
+      else if (themeName === "red") document.body.classList.add("theme-red");
+      if (persist) {
+        try { localStorage.setItem("mrb_theme", themeName); } catch (_) {}
+      }
+    }
+
+    function startNpcConversation(customA, customB) {
+      stopNpcConversation(false);
+      npcPair = [customA || "KAIROX", customB || "NOCTIS"];
+      npcStep = 0;
+      registerOperative(npcPair[0]);
+      registerOperative(npcPair[1]);
+      updateTelemetry();
+      addSystemMsg(`🤖 دوو کارەکتەری NPC هاتنە ناو ژوورەکە: [${npcPair[0]}] و [${npcPair[1]}]. بۆ ڕاگرتن /stopnpc بنووسە.`);
+
+      const emitLine = async () => {
+        const entry = npcDialogue[npcStep % npcDialogue.length];
+        const isFirst = npcStep % 2 === 0;
+        const activeName = isFirst ? npcPair[0] : npcPair[1];
+        const activeRole = isFirst ? "RECON // چاودێری ڕێڕەو" : "ENFORCER // سێبەری چاودێری";
+        npcStep++;
+        await pushMessageToFirebase({
+          sender: `NPC // ${activeName} [${activeRole}]`,
+          text: entry.line,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys",
+          typewriter: true,
+          voiceProfile: isFirst ? "kairos" : "deep"
+        });
+      };
+
+      emitLine();
+      npcTimer = setInterval(emitLine, 6500);
+    }
+
+    function stopNpcConversation(notify = true) {
+      if (npcTimer) {
+        clearInterval(npcTimer);
+        npcTimer = null;
+      }
+      updateTelemetry();
+      if (notify) {
+        addSystemMsg("🛑 گفتوگۆی NPCـەکان ڕاگیرا.");
+      }
+    }
+
+    function login() {
+      const cs = document.getElementById("callsignInput").value.trim() || "OPERATIVE";
+      const code = document.getElementById("accessInput").value.trim();
+      const err = document.getElementById("authError");
+      const boot = document.getElementById("bootBox");
+
+      if (code !== ACCESS_CODE) {
+        err.textContent = "کۆدی چوونە ژوورەوە هەڵەیە.";
+        playBeep(220, 0.16);
+        return;
+      }
+
+      err.textContent = "";
+      currentUser = cs;
+      registerOperative(currentUser);
+
+      boot.classList.remove("hidden");
+      boot.innerHTML = "▸ VERIFYING ENCRYPTED SIGNAL...<br>▸ BYPASSING NODE-09 FIREWALL...";
+      playBeep(700, 0.08);
+
+      setTimeout(() => {
+        boot.innerHTML += "<br>▸ ACCESS GRANTED // INITIALIZING MR.BLUE";
+        playBeep(900, 0.1);
+      }, 650);
+
+      setTimeout(() => {
+        boot.classList.add("hidden");
+        document.getElementById("authCard").classList.add("hidden");
+        document.getElementById("appCard").classList.remove("hidden");
+        document.getElementById("intelModal").classList.add("hidden");
+        updateTelemetry();
+        addSystemMsg(`کەناڵی MR.BLUE کرایەوە بۆ [${currentUser}]. بۆ بینینی فەرمانەکان /help بنووسە.`);
+        speakText(`Terminal online. Welcome ${currentUser}.`, "normal");
+        startSync();
+      }, 1350);
+    }
+
+    function elevateRank() {
+      const val = document.getElementById("directorInput").value.trim();
+      if (val === DIRECTOR_CODE) {
+        isArchitect = true;
+        const badge = document.getElementById("rankBadge");
+        badge.textContent = "ARCHITECT // Ω";
+        badge.classList.add("arch");
+        document.getElementById("omegaCmdsBox").classList.remove("hidden");
+        updateTelemetry();
+        playBeep(960, 0.15);
+        addSystemMsg("⚡ پلەی باڵای ARCHITECT // Ω پشتڕاست کرایەوە. فەرمانەکانی پلەی باڵا کرانەوە.");
+        speakText("Omega clearance verified.", "deep");
+      } else {
+        playBeep(240, 0.14);
+        addSystemMsg("کۆدی بەرزکردنەوەی پلە هەڵەیە.");
+      }
+    }
+
+    function quickCmd(cmd) {
+      const inp = document.getElementById("msgInput");
+      inp.value = cmd;
+      inp.focus();
+    }
+
+    function addSystemMsg(text, isAlert = false) {
+      renderItem({
+        sender: "MR.BLUE // SYSTEM",
+        text,
+        ts: Date.now(),
+        burn: Number(document.getElementById("burnSelect").value || 0),
+        kind: isAlert ? "alert" : "sys"
+      }, false);
+    }
+
+    function typeTextIntoElement(el, fullText, box) {
+      const chars = Array.from(fullText);
+      el.textContent = "";
+      let i = 0;
+      const iv = setInterval(() => {
+        el.textContent += chars[i];
+        i++;
+        box.scrollTop = box.scrollHeight;
+        if (i >= chars.length) {
+          clearInterval(iv);
+        }
+      }, 16);
+    }
+
+    function renderItem(item, shouldAutoRead = true) {
+      if (item.sender && !item.sender.includes("//")) {
+        const cleanSender = item.sender.replace(/\s*\[Ω\]/g, "").trim();
+        if (cleanSender && !activeOperatives.includes(cleanSender)) {
+          activeOperatives.push(cleanSender);
+          updateTelemetry();
+        }
+      }
+      const box = document.getElementById("messages");
+      const div = document.createElement("div");
+      div.className = "msg" + (item.kind === "alert" ? " alert" : item.kind === "sys" ? " sys" : "");
+      const timeStr = new Date(item.ts || Date.now()).toLocaleTimeString();
+
+      const metaDiv = document.createElement("div");
+      metaDiv.className = "meta";
+      metaDiv.textContent = `${item.sender || "UNKNOWN"} • ${timeStr}`;
+
+      const bodyDiv = document.createElement("div");
+      div.appendChild(metaDiv);
+      div.appendChild(bodyDiv);
+      box.appendChild(div);
+
+      if (item.typewriter && shouldAutoRead) {
+        typeTextIntoElement(bodyDiv, item.text || "", box);
+      } else {
+        bodyDiv.textContent = item.text || "";
+      }
+
+      box.scrollTop = box.scrollHeight;
+
+      if (shouldAutoRead && (item.voiceProfile || autoReadEnabled) && item.text) {
+        speakText(item.text, item.voiceProfile || "normal");
+      }
+
+      if (item.burn && item.burn > 0) {
+        setTimeout(() => div.remove(), item.burn * 1000);
+      }
+    }
+
+    function toHex(str) {
+      return Array.from(new TextEncoder().encode(str))
+        .map(b => b.toString(16).padStart(2, "0").toUpperCase())
+        .join("");
+    }
+
+    async function pushMessageToFirebase(payload) {
+      try {
+        const res = await fetch(`${DB_URL}/mr_blue_messages.json`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        document.getElementById("syncBadge").textContent = "SYNC: LIVE";
+        return true;
+      } catch (_) {
+        document.getElementById("syncBadge").textContent = "SYNC: LOCAL";
+        return false;
+      }
+    }
+
+    async function fetchMessagesFromFirebase() {
+      try {
+        const res = await fetch(`${DB_URL}/mr_blue_messages.json`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        document.getElementById("syncBadge").textContent = "SYNC: LIVE";
+        if (!data) return;
+        const box = document.getElementById("messages");
+        const items = Object.values(data).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+        if (items.length !== localMessages.length) {
+          const prevLen = localMessages.length;
+          localMessages = items;
+          updateTelemetry();
+          box.innerHTML = "";
+          items.forEach((it, idx) => renderItem(it, idx >= prevLen));
+          playBeep(700, 0.08);
+        }
+      } catch (_) {
+        document.getElementById("syncBadge").textContent = "SYNC: LOCAL";
+      }
+    }
+
+    function startSync() {
+      fetchMessagesFromFirebase();
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(fetchMessagesFromFirebase, 2500);
+    }
+
+    async function sendMessage() {
+      const inp = document.getElementById("msgInput");
+      const raw = inp.value.trim();
+      if (!raw) return;
+      inp.value = "";
+
+      if (raw.startsWith("/")) {
+        await handleCommand(raw);
+        return;
+      }
+
+      if (isLocked && !isArchitect) {
+        addSystemMsg("ژوورەکە قفڵ دراوە؛ تەنها بەڕێوەبەر دەتوانێت پەیام بنێرێت.", true);
+        playBeep(240, 0.12);
+        return;
+      }
+
+      const payload = {
+        sender: isArchitect ? `${currentUser} [Ω]` : currentUser,
+        text: raw,
+        ts: Date.now(),
+        burn: Number(document.getElementById("burnSelect").value || 0),
+        kind: "chat"
+      };
+
+      const synced = await pushMessageToFirebase(payload);
+      if (!synced) {
+        localMessages.push(payload);
+        updateTelemetry();
+        renderItem(payload, false);
+      }
+      playBeep(640, 0.07);
+    }
+
+    function randomHex(len = 8) {
+      const chars = "0123456789ABCDEF";
+      let out = "";
+      for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+      return out;
+    }
+
+    async function handleCommand(raw) {
+      const parts = raw.trim().split(/\s+/);
+      const cmd = parts[0].toLowerCase();
+      const arg = parts.slice(1).join(" ").trim();
+
+      if (cmd === "/help") {
+        addSystemMsg(
+          isArchitect
+            ? "فەرمانە گشتییەکان: /help, /scan, /ping, /status, /status-all, /time, /whoami, /wipe-local, /clear\nفەرمانەکانی پلەی باڵا: /npc, /stopnpc, /probe, /stealth, /export, /intercept, /dossier, /fake-error, /matrix, /alert, /broadcast, /say, /whisper-say, /target, /theme, /decrypt, /encrypt, /scramble, /trace, /override, /threat, /blacklist, /whisper, /countdown, /ghost, /lock, /purge, /selfdestruct"
+            : "فەرمانە گشتییەکان: /help, /scan, /ping, /status, /status-all, /time, /whoami, /wipe-local, /clear"
+        );
+        playBeep(750, 0.08);
+        return;
+      }
+
+      if (cmd === "/scan") {
+        const latency = Math.floor(18 + Math.random() * 42);
+        addSystemMsg(
+          `[SCAN COMPLETE] Node: MRB-09 | Operator: ${currentUser} | Rank: ${isArchitect ? "ARCHITECT // Ω" : "OPERATIVE"} | Threat: ${threatLevel} | Ping: ${latency}ms`
+        );
+        playBeep(820, 0.1);
+        return;
+      }
+
+      if (cmd === "/ping") {
+        const ms = Math.floor(12 + Math.random() * 35);
+        addSystemMsg(`PONG // کەناڵی MR.BLUE وەڵامی دایەوە لە ${ms}ms [Packet ID: #${randomHex(6)}]`);
+        playBeep(880, 0.06);
+        return;
+      }
+
+      if (cmd === "/status") {
+        addSystemMsg(
+          `[SYSTEM STATUS] Active: ONLINE | Threat: ${threatLevel} | Stealth: ${isStealth ? "ON" : "OFF"} | Lock: ${isLocked ? "LOCKED" : "OPEN"} | Shield: ${isShielded ? "ON" : "OFF"} | Voice: ${voiceEnabled ? "ON" : "OFF"} | AutoRead: ${autoReadEnabled ? "ON" : "OFF"} | Logs: ${localMessages.length}`
+        );
+        playBeep(740, 0.08);
+        return;
+      }
+
+      if (cmd === "/status-all") {
+        addSystemMsg(
+          `📊 [FULL OVERVIEW]\n• Operator: ${currentUser} (${isArchitect ? "Ω" : "STD"})\n• Threat: ${threatLevel} | Lock: ${isLocked ? "LOCKED" : "OPEN"} | Stealth: ${isStealth ? "ON" : "OFF"}\n• Sound: ${soundEnabled ? "ON" : "OFF"} | Voice: ${voiceEnabled ? "ON" : "OFF"} | AutoRead: ${autoReadEnabled ? "ON" : "OFF"}\n• NPC: ${npcTimer ? "ACTIVE" : "STANDBY"} | Logs: ${localMessages.length}`
+        );
+        playBeep(760, 0.08);
+        return;
+      }
+
+      if (cmd === "/time") {
+        const now = new Date();
+        addSystemMsg(`🕒 [CLOCK SYNC] Date: ${now.toLocaleDateString()} | Time: ${now.toLocaleTimeString()} | Zone: LOCAL-NODE`);
+        playBeep(710, 0.07);
+        return;
+      }
+
+      if (cmd === "/whoami") {
+        addSystemMsg(`🪪 [IDENTITY] Callsign: ${currentUser} | Clearance: ${isArchitect ? "OMEGA ROOT" : "STANDARD OPERATIVE"} | Threat: ${threatLevel}`);
+        playBeep(730, 0.07);
+        return;
+      }
+
+      if (cmd === "/wipe-local") {
+        localMessages = [];
+        updateTelemetry();
+        document.getElementById("messages").innerHTML = "";
+        addSystemMsg("🧹 لۆگە خۆجێییەکانی شاشەی خۆت پاک کرانەوە.");
+        playBeep(620, 0.08);
+        return;
+      }
+
+      if (cmd === "/clear") {
+        document.getElementById("messages").innerHTML = "";
+        addSystemMsg("شاشەی تێرمیناڵ بۆ تۆ پاککرایەوە.");
+        playBeep(600, 0.08);
+        return;
+      }
+
+      if (!isArchitect) {
+        addSystemMsg(`⛔ فەرمانی ${cmd} پێویستی بە پلەی بەرزکردنەوە هەیە.`, true);
+        playBeep(220, 0.14);
+        return;
+      }
+
+      if (cmd === "/npc") {
+        const nParts = arg.split(/\s+/).filter(Boolean);
+        startNpcConversation(nParts[0] || "KAIROX", nParts[1] || "NOCTIS");
+        playBeep(840, 0.1);
+      } else if (cmd === "/stopnpc") {
+        stopNpcConversation(true);
+        playBeep(450, 0.1);
+      } else if (cmd === "/probe") {
+        await pushMessageToFirebase({
+          sender: "PROBE-ENGINE // Ω",
+          text: `🔎 [PORT & FIREWALL PROBE] Gateway: MRB-09 | Ports 443, 8443, 9090: MASKED | Firewall: OMEGA-SHIELD | Relay: RELAY-${randomHex(4)} | Status: CLEAN`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys",
+          typewriter: true
+        });
+        playBeep(810, 0.1);
+      } else if (cmd === "/stealth") {
+        isStealth = !isStealth;
+        document.body.classList.toggle("stealth-mode", isStealth);
+        try { localStorage.setItem("mrb_stealth", isStealth ? "1" : "0"); } catch (_) {}
+        updateTelemetry();
+        addSystemMsg(isStealth ? "🌑 دۆخی STEALTH چالاک کرا؛ شاشە تاریکتر و دەنگەکان بێدەنگ کران." : "🌕 دۆخی STEALTH ناچالاک کرا؛ دۆخی ئاسایی گەڕایەوە.");
+      } else if (cmd === "/export") {
+        if (!localMessages.length) {
+          addSystemMsg("هیچ پەیامێکی تۆمارکراو نییە بۆ هەناردن.");
+          return;
+        }
+        const exported = localMessages
+          .map((m, i) => `${i + 1}. [${m.sender || "SYS"}] ${m.text || ""}`)
+          .join("\n");
+        addSystemMsg(`📄 [EXPORTED LOGS // ${localMessages.length} ITEMS]\n${exported}`);
+        playBeep(760, 0.09);
+      } else if (cmd === "/intercept") {
+        const targetSig = arg || "CHANNEL-X";
+        await pushMessageToFirebase({
+          sender: "SIGNAL-INTERCEPT // Ω",
+          text: `🎧 [SIGNAL INTERCEPTED] Target: ${targetSig} | Stream: ${randomHex(12)} | Status: LOCKED & RECORDED`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys",
+          typewriter: true
+        });
+        playBeep(770, 0.1);
+      } else if (cmd === "/dossier") {
+        const subject = arg || "UNKNOWN-ENTITY";
+        await pushMessageToFirebase({
+          sender: "DOSSIER-GEN // Ω",
+          text: `📁 [CLASSIFIED FILE #${randomHex(4)}] Subject: ${subject} | Clearance: WATCHED | Risk Level: HIGH | Last Seen: NODE-09`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "alert",
+          typewriter: true
+        });
+        playBeep(490, 0.14);
+      } else if (cmd === "/fake-error") {
+        await pushMessageToFirebase({
+          sender: "KERNEL // FAULT",
+          text: `💥 [FAKE ERROR] KERNEL PANIC // OVERRIDE DETECTED AT 0x${randomHex(6)} — TRACE ATTEMPT BLOCKED BY Ω`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "alert",
+          typewriter: true,
+          voiceProfile: "urgent"
+        });
+        playBeep(210, 0.22);
+      } else if (cmd === "/matrix") {
+        const stream = `01X-${randomHex(4)} :: 10110100 :: MRB-CORE :: ${randomHex(6)} :: SYNC-OK`;
+        await pushMessageToFirebase({
+          sender: "MATRIX-STREAM // Ω",
+          text: `🟩 ${stream}`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys",
+          typewriter: true
+        });
+        playBeep(830, 0.08);
+      } else if (cmd === "/alert") {
+        const msg = arg || "باری ئاگاداریی بەرز لە کەناڵی MR.BLUE";
+        await pushMessageToFirebase({ sender: "ALERT // Ω", text: `🚨 ${msg}`, ts: Date.now(), burn: 0, kind: "alert", typewriter: true, voiceProfile: "urgent" });
+        playBeep(300, 0.22);
+      } else if (cmd === "/broadcast") {
+        const msg = arg || "پەیامی فەرمیی گشتی لە کەناڵی MR.BLUE";
+        await pushMessageToFirebase({ sender: "BROADCAST // Ω", text: `📡 [BROADCAST]: ${msg}`, ts: Date.now(), burn: 0, kind: "sys", typewriter: true, voiceProfile: "normal" });
+        playBeep(860, 0.12);
+      } else if (cmd === "/say") {
+        const speech = arg || "System voice online. Mr Blue is watching.";
+        await pushMessageToFirebase({ sender: "SYNTH-VOICE // Ω", text: `🗣 [VOICE]: ${speech}`, ts: Date.now(), burn: 0, kind: "sys", voiceProfile: "deep" });
+        playBeep(780, 0.09);
+      } else if (cmd === "/whisper-say") {
+        const wParts = arg.split(/\s+/);
+        const targetName = wParts[0] || "TARGET";
+        const wText = wParts.slice(1).join(" ") || "We see every move you make.";
+        await pushMessageToFirebase({ sender: "WHISPER-VOICE // Ω", text: `🤫 [VOICE TO ${targetName}]: ${wText}`, ts: Date.now(), burn: 0, kind: "sys", voiceProfile: "deep" });
+        playBeep(560, 0.09);
+      } else if (cmd === "/target") {
+        const tName = arg || "SUBJECT-01";
+        await pushMessageToFirebase({
+          sender: "SURVEILLANCE // Ω",
+          text: `🎯 [TARGET DOSSIER] Subject: ${tName} | ID: #TGT-${randomHex(4)} | Status: MONITORED | Risk: ELEVATED`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "alert"
+        });
+        playBeep(460, 0.14);
+      } else if (cmd === "/theme") {
+        const th = (arg || "blue").toLowerCase();
+        if (["blue", "green", "red"].includes(th)) {
+          applyTheme(th, true);
+          addSystemMsg(`🎨 ڕەنگی تێرمیناڵ گۆڕدرا بۆ [${th.toUpperCase()}].`);
+          playBeep(760, 0.1);
+        } else {
+          addSystemMsg("ڕەنگە بەردەستەکان: blue, green, red — بۆ نموونە: /theme green");
+        }
+      } else if (cmd === "/encrypt") {
+        const plain = arg || "MR.BLUE SHADOW PROTOCOL";
+        const hex = toHex(plain);
+        await pushMessageToFirebase({
+          sender: "ENCRYPTOR // Ω",
+          text: `🔐 Key #${randomHex(4)} | Plain: ${plain} → Cipher HEX: ${hex}`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys"
+        });
+        playBeep(890, 0.1);
+      } else if (cmd === "/decrypt") {
+        const target = arg || "4D522E424C5545202F2F204F4D454741";
+        const decoded = target.split("").reverse().join("");
+        await pushMessageToFirebase({
+          sender: "DECRYPTOR // Ω",
+          text: `🔓 Key #${randomHex(4)} | Input: ${target} → Decoded Stream: ${decoded}`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys"
+        });
+        playBeep(910, 0.12);
+      } else if (cmd === "/scramble") {
+        const base = arg || "MR.BLUE CLASSIFIED";
+        const scrambled = base.split("").sort(() => Math.random() - 0.5).join("");
+        addSystemMsg(`🔀 SCRAMBLED [${randomHex(4)}]: ${scrambled}`);
+        playBeep(720, 0.08);
+      } else if (cmd === "/trace") {
+        await pushMessageToFirebase({
+          sender: "TRACE // Ω",
+          text: `🛰 [TRACE ACTIVE] Hop-1: 10.0.${Math.floor(Math.random()*254)}.${Math.floor(Math.random()*254)} → Hop-2: Relay-${randomHex(4)} → Lock: VERIFIED`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys"
+        });
+        playBeep(790, 0.1);
+      } else if (cmd === "/override") {
+        const mode = arg || "PROTOCOL-OMEGA";
+        document.getElementById("nodeStat").textContent = `${mode.toUpperCase()} // OVERRIDDEN`;
+        await pushMessageToFirebase({
+          sender: "OVERRIDE // Ω",
+          text: `⚙ سیستەم گۆڕدرا بۆ دۆخی [${mode.toUpperCase()}] بە کۆدی ڕێکخستنی #${randomHex(6)}.`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "alert"
+        });
+        playBeep(520, 0.16);
+      } else if (cmd === "/threat") {
+        const level = (arg || "CRITICAL").toUpperCase();
+        if (["LOW", "ELEVATED", "CRITICAL"].includes(level)) {
+          threatLevel = level;
+          updateTelemetry();
+          await pushMessageToFirebase({
+            sender: "THREAT-CTRL // Ω",
+            text: `⚠ ئاستی مەترسیی کەناڵ بۆ [${threatLevel}] گۆڕدرا.`,
+            ts: Date.now(),
+            burn: 0,
+            kind: threatLevel === "CRITICAL" ? "alert" : "sys",
+            voiceProfile: threatLevel === "CRITICAL" ? "urgent" : "normal"
+          });
+          playBeep(threatLevel === "CRITICAL" ? 260 : 760, 0.14);
+        } else {
+          addSystemMsg("ئاستە دروستەکان: LOW, ELEVATED, CRITICAL — بۆ نموونە: /threat CRITICAL");
+        }
+      } else if (cmd === "/blacklist") {
+        const name = arg || "UNKNOWN-TARGET";
+        await pushMessageToFirebase({
+          sender: "SECURITY // Ω",
+          text: `🚫 ناوی [${name}] خرایە لیستی چاودێری و بلۆککردنی تێرمیناڵ (Ref: #${randomHex(5)}).`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "alert"
+        });
+        playBeep(260, 0.16);
+      } else if (cmd === "/whisper") {
+        const wParts = arg.split(/\s+/);
+        const targetUser = wParts[0] || "TARGET";
+        const secretText = wParts.slice(1).join(" ") || "چاودێریت لەسەرە.";
+        await pushMessageToFirebase({
+          sender: "DIRECT-SIGNAL // Ω",
+          text: `🕶 [TO ${targetUser}]: ${secretText}`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "sys"
+        });
+        playBeep(670, 0.09);
+      } else if (cmd === "/countdown") {
+        const secs = Math.min(30, Math.max(3, parseInt(arg || "5", 10) || 5));
+        await pushMessageToFirebase({
+          sender: "TIMER // Ω",
+          text: `⏳ ژماردنی پێچەوانە دەستی پێ کرد: ${secs} چرکە...`,
+          ts: Date.now(),
+          burn: 0,
+          kind: "alert"
+        });
+        let left = secs;
+        const iv = setInterval(() => {
+          left--;
+          playBeep(left === 0 ? 320 : 840, 0.07);
+          if (left <= 0) {
+            clearInterval(iv);
+            addSystemMsg("⏱ کات تەواو بوو // قۆناغی دواتر چالاک کرا.", true);
+          }
+        }, 1000);
+      } else if (cmd === "/ghost") {
+        currentUser = "GHOST";
+        registerOperative(currentUser);
+        addSystemMsg("👻 دۆخی GHOST چالاک کرا؛ ناسنامەی ئێستا بۆ [GHOST] گۆڕدرا.");
+        playBeep(680, 0.1);
+      } else if (cmd === "/lock") {
+        toggleLock();
+      } else if (cmd === "/purge") {
+        try {
+          await fetch(`${DB_URL}/mr_blue_messages.json`, { method: "DELETE" });
+        } catch (_) {}
+        localMessages = [];
+        updateTelemetry();
+        document.getElementById("messages").innerHTML = "";
+        addSystemMsg("🔥 هەموو پەیامەکانی ناو ژوورەکە بە فەرمانی /purge سڕانەوە.", true);
+        playBeep(200, 0.2);
+      } else if (cmd === "/selfdestruct") {
+        stopNpcConversation(false);
+        document.body.classList.add("destruct-flash");
+        addSystemMsg("☢ SELF-DESTRUCT INITIATED // لەناوچوونی کەناڵ لە ٥ چرکەدا...", true);
+        speakText("Self destruct sequence initiated.", "urgent");
+        let left = 5;
+        const iv = setInterval(async () => {
+          playBeep(200 + left * 60, 0.14);
+          left--;
+          if (left <= 0) {
+            clearInterval(iv);
+            try {
+              await fetch(`${DB_URL}/mr_blue_messages.json`, { method: "DELETE" });
+            } catch (_) {}
+            localMessages = [];
+            isArchitect = false;
+            document.body.classList.remove("destruct-flash");
+            document.getElementById("omegaCmdsBox").classList.add("hidden");
+            document.getElementById("rankBadge").textContent = "OPERATIVE";
+            document.getElementById("rankBadge").classList.remove("arch");
+            document.getElementById("appCard").classList.add("hidden");
+            document.getElementById("authCard").classList.remove("hidden");
+            updateTelemetry();
+          }
+        }, 1000);
+      } else {
+        addSystemMsg(`فەرمانی نەناسراو: ${cmd} — بۆ بینینی لیستەکە /help بنووسە.`);
+      }
+    }
+  </script>
+</body>
+</html>
